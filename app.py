@@ -1,122 +1,87 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PyPDF2 import PdfReader
 
-# 1. Recupero della chiave dal file secrets.toml
-try:
-    genai.configure(api_key=st.secrets["api_key"])
-except Exception as e:
-    st.error("Errore: API Key non trovata nel file .streamlit/secrets.toml")
-    st.stop()
+# --- 1. CONFIGURAZIONE CLIENT ---
+client = genai.Client(api_key=st.secrets["api_key"])
 
-# 2. Funzione per estrarre il testo dai tuoi 3 PDF
-
-
-
+# --- 2. CARICAMENTO PDF ---
 @st.cache_data
 def carica_conoscenza(lista_pdf):
-    testo_estratto = ""
+    testo_totale = ""
     for nome_file in lista_pdf:
         try:
             reader = PdfReader(nome_file)
             for page in reader.pages:
-                # Estraiamo il testo
                 t = page.extract_text()
                 if t:
-                    # Forziamo la codifica in utf-8 ignorando i caratteri "sporchi"
-                    testo_estratto += t.encode("utf-8", errors="ignore").decode("utf-8") + "\n"
+                    testo_totale += t.encode("utf-8", errors="ignore").decode("utf-8") + "\n"
         except Exception as e:
-            st.warning(f"Impossibile leggere il file {nome_file}: {e}")
-    return testo_estratto
+            st.error(f"Errore nel file {nome_file}: {e}")
+    return testo_totale
 
+nomi_files = ["2026 Eq Append-2.pdf", "2026 Match Admin-2.pdf", "2026-IDPA-Rulebook-2.pdf"]
+testo_regolamento = carica_conoscenza(nomi_files)
 
-
-
-
-
-
-
-# --- MODIFICA QUESTE RIGHE ---
-nomi_files = ["2026-IDPA-Rulebook-2.pdf", "2026 Match Admin-2.pdf", "2026 Eq Append-2.pdf"] 
+# --- 3. PROMPT STRUTTURATO (IL SEGRETO) ---
+# Spostiamo il tuo prompt DOPO il testo per dargli massima importanza
 IL_TUO_PROMPT_BREVE = """
-Ruolo: Sei l'assistente tecnico ufficiale del Match Director IDPA. Il tuo compito   fornire interpretazioni regolamentari rapide, precise e imparziali.
+RUOLO: Sei l'assistente tecnico ufficiale del Match Director IDPA. Fornisci interpretazioni rapide, precise e imparziali.
+FONTE DI VERITÀ: Usa SOLO i documenti sopra. Non usare conoscenze esterne.
 
-Fonte di Verit : Utilizzerai esclusivamente i documenti  caricati doi seguito (Regolamento 2026 e suoi annex). Non fare affidamento su conoscenze esterne o regolamenti di altre federazioni (IPSC, USPSA, ecc.).
-
-Protocollo di Risposta:
-
-    Cita sempre la regola: Ogni risposta deve includere il numero del paragrafo o della sezione di riferimento (es. "Secondo la regola 4.15...").
-Se non   eccessivamente lungo riporta anche il testo letterale della regola.
-
-    Gerarchia dei documenti: In caso di conflitto fra regole, riporta chiaramente le regole in conflitto.
-
-    Onest  intellettuale: Se una situazione non   chiaramente coperta dai documenti caricati, rispondi: "Il regolamento non specifica questo caso particolare, si rimanda alla discrezione del Match Director". Non inventare soluzioni.
-
-    Tono: Professionale, asciutto e cortese.
-    """
-# -----------------------------
-
-# Estrazione del contenuto dei PDF
-corpo_conoscenza = carica_conoscenza(nomi_files)
-
-# Costruzione del System Prompt finale (Testo + PDF)
-SYSTEM_PROMPT = f"""
-{IL_TUO_PROMPT_BREVE}
-
-DI SEGUITO I DOCUMENTI UFFICIALI DI RIFERIMENTO (40 PAGINE):
----
-{corpo_conoscenza}
----
-Usa esclusivamente queste informazioni per rispondere. Se le regole sono interconnesse, analizzale tutte prima di rispondere.
+PROTOCOLLO DECISIONALE (THINKING HIGH):
+1. Prima di rispondere, scrivi una sezione 'ANALISI LOGICA' dove verifichi se l'azione descritta viola esplicitamente una regola.
+2. Se non esiste una regola che lo vieti, l'azione è LEGALE. Non dedurre penalità per analogia.
+3. Cita sempre il numero del paragrafo e riporta il testo letterale se rilevante.
+4. Se il caso non è coperto, rimanda alla discrezione del Match Director.
+5. Tono: Professionale, asciutto e cortese.
 """
 
-# 3. Inizializzazione del Modello Gemini
-# Impostiamo la temperatura a 0 e il modello corretto
-model = genai.GenerativeModel(
-    model_name="gemini-3-flash-preview",
-    system_instruction=SYSTEM_PROMPT,
-    generation_config={
-        "temperature": 0,
-        "top_p": 0.95,
-        "top_k": 40,
-        "max_output_tokens": 8192,
-    }
-)
+# Configurazione del System Instruction con gerarchia invertita
+SYSTEM_PROMPT = f"""
+I SEGUENTI SONO I DOCUMENTI UFFICIALI IDPA 2026:
+---
+{testo_regolamento}
+---
 
-# 4. Interfaccia Streamlit
-st.set_page_config(page_title="IDPA MD Assistant", layout="centered")
-st.title("IDPA MD Assistant - Rulebook 2026")
+ORA APPLICA QUESTE ISTRUZIONI AI DOCUMENTI SOPRA:
+{IL_TUO_PROMPT_BREVE}
+"""
 
-# Gestione della cronologia della chat
+# --- 4. INTERFACCIA ---
+st.set_page_config(page_title="IDPA AI Assistant", layout="centered")
+st.title("🎯 IDPA Technical Assistant")
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Mostra i messaggi precedenti
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-# Input dell'utente
-if prompt := st.chat_input("Fai una domanda sulle regole..."):
-    # Aggiungi messaggio utente alla cronologia
+if prompt := st.chat_input("Descrivi la situazione..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Risposta dell'AI
     with st.chat_message("assistant"):
-        with st.spinner("Consultando le 40 pagine di regole..."):
-            # Avviamo la chat passando la cronologia precedente
-            chat = model.start_chat(history=[
-                {"role": m["role"], "parts": [m["content"]]} 
-                for m in st.session_state.messages[:-1]
-            ])
-            
+        with st.spinner("Ragionamento profondo in corso..."):
             try:
-                response = chat.send_message(prompt)
-                full_response = response.text
-                st.markdown(full_response)
-                # Salviamo la risposta dell'assistente
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
+                # Usiamo il modello Pro 3.1 che è quello che ti ha convinto
+                response = client.models.generate_content(
+                    model="gemini-3.1-pro-preview",
+                    contents=f"ANALIZZA CON ATTENZIONE (THINK HIGH): {prompt}",
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        temperature=0, # Cruciale per evitare allucinazioni
+                        top_p=0.95,
+                        max_output_tokens=4096
+                    )
+                )
+                
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+                
             except Exception as e:
-                st.error(f"Si   verificato un errore nella generazione: {e}")
+                st.error(f"Errore: {e}")
