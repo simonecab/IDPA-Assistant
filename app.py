@@ -51,7 +51,7 @@ ORA APPLICA QUESTE ISTRUZIONI AI DOCUMENTI SOPRA:
 
 # --- 4. INTERFACCIA ---
 st.set_page_config(page_title="IDPA AI Assistant", layout="centered")
-st.title("🎯 IDPA Technical Assistant")
+st.title("🎯 IDPA MD Technical Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -66,7 +66,7 @@ if prompt := st.chat_input("Descrivi la situazione..."):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Ragionamento profondo in corso..."):
+        with st.spinner("Analisi rulebook 2026 e ragionamento in corso..."):
             try:
                 # Usiamo il modello Pro 3.1 che è quello che ti ha convinto
                 response = client.models.generate_content(
