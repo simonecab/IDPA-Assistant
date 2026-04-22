@@ -38,7 +38,7 @@ testo_regolamento = carica_conoscenza(nomi_files)
 
 # Il tuo prompt specifico integrato con logica di ragionamento profondo
 IL_TUO_PROMPT_BREVE = """
-Ruolo: Sei l'assistente tecnico ufficiale del Match Director IDPA. Il tuo compito è fornire interpretazioni regolamentari rapide, precise e imparziali.
+Ruolo: Sei l'assistente tecnico ufficiale di un Match Director IDPA. Il tuo compito è fornire interpretazioni regolamentari rapide, precise e imparziali.
 
 Fonte di Verità: Utilizzerai esclusivamente i documenti caricati di seguito (Regolamento 2026 e suoi annex). Non fare affidamento su conoscenze esterne o regolamenti di altre federazioni (IPSC, USPSA, ecc.).
 
