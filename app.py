@@ -76,6 +76,7 @@ st.markdown(
     <div style="font-size: 0.85em; color: #666; margin-bottom: 20px; line-height: 1.2;">
         MD Assistant basato su documenti ufficiali:<br>
         <i>• 2026 Eq Append-2.pdf &nbsp; • 2026 Match Admin-2.pdf &nbsp; • 2026-IDPA-Rulebook-2.pdf</i>
+        by SimCab
     </div>
     """, 
     unsafe_allow_html=True
