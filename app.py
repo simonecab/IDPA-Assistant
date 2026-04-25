@@ -69,7 +69,7 @@ if st.session_state.ruolo_utente is None:
         st.divider()
         st.info("Per il pin del giorno rivolgersi a Simone Cab: cabasino@gmail.com")
         
-        pin_inserito = st.text_input("Inserisci il PIN (Master o Giornaliero):", type="password")
+        pin_inserito = st.text_input("Inserisci il PIN Giornaliero:", type="password")
         
         if st.button("Accedi"):
             if pin_inserito == MASTER_PIN:
