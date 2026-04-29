@@ -165,7 +165,12 @@ for m in st.session_state.messages:
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
 
-if prompt := st.chat_input("Descrivi la situazione..."):
+# Sostituzione di st.chat_input con form e text_area
+with st.form(key="chat_form", clear_on_submit=True):
+    prompt = st.text_area("Descrivi la situazione (Invio per andare a capo):", height=100)
+    inviato = st.form_submit_button("Invia Richiesta")
+
+if inviato and prompt.strip():
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -189,6 +194,7 @@ if prompt := st.chat_input("Descrivi la situazione..."):
                 
             except Exception as e:
                 st.error(f"Errore: {e}")
+                
 
 # --- LOGOUT ---
 st.divider()
