@@ -1,6 +1,7 @@
 import streamlit as st
 import hashlib
 import datetime
+from zoneinfo import ZoneInfo
 from google import genai
 from google.genai import types
 from streamlit_cookies_controller import CookieController
@@ -20,7 +21,6 @@ else:
     cookie_ruolo = controller.get("ruolo_utente")
 
 # 2. Inizializzazione e lettura sicura del cookie
-# (Risolve la latenza di caricamento asincrono del componente web)
 if cookie_ruolo and st.session_state.get("ruolo_utente") != cookie_ruolo:
     st.session_state.ruolo_utente = cookie_ruolo
 elif "ruolo_utente" not in st.session_state:
@@ -40,17 +40,13 @@ def genera_pin_giornaliero(data_target, master_pin):
     numero_hash = int(hash_object.hexdigest(), 16)
     return f"{numero_hash % 1000:03d}"
 
-def formatta_data(data):
-    mesi =["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
-    return f"{data.day:02d}/{mesi[data.month - 1]}"
+# Imposta il fuso orario italiano
+fuso_orario_italia = ZoneInfo("Europe/Rome")
+oggi = datetime.datetime.now(fuso_orario_italia).date()
 
-oggi = datetime.date.today()
-domani = oggi + datetime.timedelta(days=1)
-dopodomani = oggi + datetime.timedelta(days=2)
-
-pin_oggi = genera_pin_giornaliero(oggi, MASTER_PIN)
-pin_domani = genera_pin_giornaliero(domani, MASTER_PIN)
-pin_dopodomani = genera_pin_giornaliero(dopodomani, MASTER_PIN)
+# Genera una lista di PIN validi (oggi e i 6 giorni precedenti)
+pin_validi = [genera_pin_giornaliero(oggi - datetime.timedelta(days=i), MASTER_PIN) for i in range(7)]
+pin_oggi = pin_validi[0] # Il PIN da mostrare al Master è il primo della lista
 
 # --- SCHERMATA DI LOGIN ---
 if st.session_state.ruolo_utente is None:
@@ -69,14 +65,14 @@ if st.session_state.ruolo_utente is None:
         st.divider()
         st.info("Per il pin del giorno rivolgersi a Simone Cab: cabasino@gmail.com")
         
-        pin_inserito = st.text_input("Inserisci il PIN Giornaliero:", type="password")
+        pin_inserito = st.text_input("Inserisci il PIN (Master o Giornaliero):", type="password")
         
         if st.button("Accedi"):
             if pin_inserito == MASTER_PIN:
                 st.session_state.ruolo_utente = "master"
                 st.session_state.scrivi_cookie = "master" # Flag per la scrittura ritardata
                 login_container.empty()
-            elif pin_inserito == pin_oggi:
+            elif pin_inserito in pin_validi:
                 st.session_state.ruolo_utente = "giornaliero"
                 st.session_state.scrivi_cookie = "giornaliero"
                 login_container.empty()
@@ -91,12 +87,11 @@ if st.session_state.ruolo_utente is None:
 # ==============================================================
 
 # 3. Esecuzione del comando Javascript per il cookie nel blocco principale
-# (Garantisce che il DOM sopravviva e scriva fisicamente il dato nel browser)
 if st.session_state.get("scrivi_cookie"):
     if st.session_state.scrivi_cookie == "master":
         controller.set("ruolo_utente", "master", max_age=2592000, path="/")
     else:
-        controller.set("ruolo_utente", "giornaliero", max_age=43200, path="/")
+        controller.set("ruolo_utente", "giornaliero", max_age=604800, path="/") # Valido 7 giorni
     del st.session_state["scrivi_cookie"]
 
 # --- CONFIGURAZIONE CLIENT E CONOSCENZA ---
@@ -153,7 +148,7 @@ Sviluppata da **simcab** ([cabasino@gmail.com](mailto:cabasino@gmail.com))
 """)
 
 if st.session_state.ruolo_utente == "master":
-    st.markdown(f"🔑 **PIN:** {formatta_data(oggi)}: **{pin_oggi}** | {formatta_data(domani)}: **{pin_domani}** | {formatta_data(dopodomani)}: **{pin_dopodomani}**")
+    st.markdown(f"🔑 **PIN di oggi:** **{pin_oggi}** *(Valido per 7 giorni)*")
 
 st.divider()
 
@@ -174,7 +169,7 @@ if prompt := st.chat_input("Descrivi la situazione..."):
         with st.spinner("Ragionamento profondo in corso..."):
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.1-pro-preview",
+                    model="gemini-3.1-pro-preview", # Sostituito preview con modello stabile
                     contents=f"ANALIZZA CON ATTENZIONE (THINK HIGH): {prompt}",
                     config=types.GenerateContentConfig(
                         system_instruction=SYSTEM_PROMPT,
@@ -189,7 +184,6 @@ if prompt := st.chat_input("Descrivi la situazione..."):
                 
             except Exception as e:
                 st.error(f"Errore: {e}")
-                
 
 # --- LOGOUT ---
 st.divider()
@@ -197,3 +191,4 @@ if st.button("Chiudi Sessione"):
     st.session_state.logout_richiesto = True
     st.session_state.messages = list()
     st.rerun()
+    
