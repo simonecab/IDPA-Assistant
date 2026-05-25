@@ -40,6 +40,10 @@ def genera_pin_giornaliero(data_target, master_pin):
     numero_hash = int(hash_object.hexdigest(), 16)
     return f"{numero_hash % 1000:03d}"
 
+def formatta_data(data):
+    mesi = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    return f"{data.day:02d}/{mesi[data.month - 1]}"
+
 # Imposta il fuso orario italiano
 fuso_orario_italia = ZoneInfo("Europe/Rome")
 oggi = datetime.datetime.now(fuso_orario_italia).date()
@@ -55,7 +59,7 @@ if st.session_state.ruolo_utente is None:
         st.title("🎯 IDPA Technical Assistant")
         
         st.markdown("""
-        **MD Assistant basato su documenti ufficiali:**  
+        **Risposte elaborate da AI basate su documenti ufficiali:**  
         • 2026 Eq Append-2.pdf  
         • 2026 Match Admin-2.pdf  
         • 2026-IDPA-Rulebook-2.pdf  
@@ -114,7 +118,7 @@ testo_regolamento = carica_conoscenza("regolamento_completo.txt")
 
 # --- PROMPT STRUTTURATO ---
 IL_TUO_PROMPT_BREVE = """
-RUOLO: Sei l'assistente tecnico ufficiale del Match Director IDPA. Fornisci interpretazioni rapide, precise e imparziali.
+RUOLO: Sei un assistente tecnico AI a supporto del Match Director IDPA. Fornisci interpretazioni rapide, precise e imparziali.
 FONTE DI VERITÀ: Usa SOLO i documenti sopra. Non usare conoscenze esterne.
 
 PROTOCOLLO DECISIONALE (THINKING HIGH):
@@ -139,7 +143,7 @@ ORA APPLICA QUESTE ISTRUZIONI AI DOCUMENTI SOPRA:
 st.title("🎯 IDPA Technical Assistant")
 
 st.markdown("""
-**MD Assistant basato su documenti ufficiali:**  
+**Risposte elaborate da AI basate su documenti ufficiali:**  
 • 2026 Eq Append-2.pdf  
 • 2026 Match Admin-2.pdf  
 • 2026-IDPA-Rulebook-2.pdf  
@@ -169,7 +173,7 @@ if prompt := st.chat_input("Descrivi la situazione..."):
         with st.spinner("Ragionamento profondo in corso..."):
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.1-pro-preview", # Sostituito preview con modello stabile
+                    model="gemini-3.1-pro-preview",
                     contents=f"ANALIZZA CON ATTENZIONE (THINK HIGH): {prompt}",
                     config=types.GenerateContentConfig(
                         system_instruction=SYSTEM_PROMPT,
@@ -191,4 +195,3 @@ if st.button("Chiudi Sessione"):
     st.session_state.logout_richiesto = True
     st.session_state.messages = list()
     st.rerun()
-    
