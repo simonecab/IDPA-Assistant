@@ -2846,5 +2846,17 @@ fee to the shooter.
 week of the match completion date with their After- Action report of the match.  
 10.3.5  *All references of AC include IPOC and designates w here appropriate. In some circumstances, time zones  may 
 preclude immediate reporting and will require other  text or email notification.  
+
+---
+integrazione del regolamento
+Chiarimento Ufficiale HeadQuarter, maggio 2026 
+Applicazione della Priorità d'ingaggio in the open, in presenza di Barriere Visive.
+
+La priorità tattica di profondità si applica esclusivamente ai bersagli che sono simultaneamente visibili al tiratore. Di conseguenza, i bersagli devono essere ingaggiati nell'ordine in cui si presentano alla vista del tiratore, garantendo un criterio oggettivo e uniforme di applicazione della regola ed eliminando la necessità di interpretazioni soggettive da parte del SO.
+
+Ad esempio: se Da una posizione il tiratore può osservare soltanto tre dei quattro bersagli presenti in the open e il quarto è completamente occultato dalla barriera visiva. Tale configurazione determina l'ordine di ingaggio: i tre bersagli inizialmente visibili devono essere ingaggiati (in priorità tattica) prima del bersaglio occultato.
+Lo spostamento del tiratore non modifica tale ordine. Anche qualora, una volta cambiata posizione, il quarto bersaglio risultasse più vicino rispetto agli altri, esso dovrà essere ingaggiato solo dopo il completamento dell'ingaggio dei tre bersagli inizialmente visibili.
+La priorità tattica di profondità si applica esclusivamente ai bersagli che sono simultaneamente visibili al tiratore. Di conseguenza, i bersagli devono essere ingaggiati nell'ordine in cui si presentano alla vista del tiratore, garantendo un criterio oggettivo e uniforme di applicazione della regola ed eliminando la necessità di interpretazioni soggettive da parte del SO.
+---
  
  
