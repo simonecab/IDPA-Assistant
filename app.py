@@ -173,12 +173,11 @@ if prompt := st.chat_input("Descrivi la situazione..."):
         with st.spinner("Ragionamento profondo in corso..."):
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.1-pro-preview",
+                    model="gemini-3.8-flash",
                     contents=f"ANALIZZA CON ATTENZIONE (THINK HIGH): {prompt}",
                     config=types.GenerateContentConfig(
                         system_instruction=SYSTEM_PROMPT,
-                        temperature=0,
-                        top_p=0.95,
+                        thinking_config=types.ThinkingConfig(thinking_level="high"),
                         max_output_tokens=4096
                     )
                 )
