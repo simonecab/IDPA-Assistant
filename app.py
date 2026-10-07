@@ -59,7 +59,7 @@ if st.session_state.ruolo_utente is None:
         st.title("🎯 IDPA Technical Assistant")
         
         st.markdown("""
-        **Risposte elaborate da AI basate su documenti ufficiali:**  
+        **versione del 07/10/2026, risposte elaborate da AI basate su documenti ufficiali:**  
         • 2026 Eq Append-2.pdf  
         • 2026 Match Admin-2.pdf  
         • 2026-IDPA-Rulebook-2.pdf  
@@ -143,7 +143,7 @@ ORA APPLICA QUESTE ISTRUZIONI AI DOCUMENTI SOPRA:
 st.title("🎯 IDPA Technical Assistant")
 
 st.markdown("""
-**Risposte elaborate da AI basate su documenti ufficiali:**  
+**versione del 07/10/2026, risposte elaborate da AI basate su documenti ufficiali:**  
 • 2026 Eq Append-2.pdf  
 • 2026 Match Admin-2.pdf  
 • 2026-IDPA-Rulebook-2.pdf  
